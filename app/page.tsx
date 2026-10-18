@@ -27,8 +27,6 @@ type Conversation = {
 
 type ChatMode = 'standard' | 'think' | 'research';
 type CreativeKind = 'image' | 'sticker';
-type ChatProvider = 'gemini' | 'groq';
-type GroqModel = 'openai/gpt-oss-120b' | 'qwen/qwen3.8-27b';
 
 type SpeechRecognizer = {
   lang: string;
@@ -143,8 +141,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState('Auto detect');
   const [mode, setMode] = useState<ChatMode>('standard');
-  const [provider, setProvider] = useState<ChatProvider>('gemini');
-  const [groqModel, setGroqModel] = useState<GroqModel>('openai/gpt-oss-120b');
   const [creativeKind, setCreativeKind] = useState<CreativeKind | null>(null);
   const [listening, setListening] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -410,7 +406,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(creativeKind
           ? { prompt: userPrompt, kind: creativeKind }
-          : { message: userPrompt, history: messages, attachments: sentAttachments, language, mode, provider, groqModel }),
+          : { message: userPrompt, history: messages, attachments: sentAttachments, language, mode }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not get a response.');
@@ -534,14 +530,14 @@ export default function Home() {
           ))}
         </div>
         <div className="sidebar-bottom">
-          <div className="privacy-note"><span className="privacy-dot" /><div><strong>Your privacy matters</strong><span>Chat history stays in this browser. Prompts you send are processed by your selected AI provider.</span><button type="button" className="clear-history-button" onClick={clearSavedHistory}>Clear saved history</button></div></div>
+          <div className="privacy-note"><span className="privacy-dot" /><div><strong>Your privacy matters</strong><span>Chat history stays in this browser. Prompts you send are processed by Google Gemini.</span><button type="button" className="clear-history-button" onClick={clearSavedHistory}>Clear saved history</button></div></div>
           <div className="profile-row"><div className="avatar">A</div><div className="profile-copy"><strong>Ahmii</strong><span>Free plan</span></div><button className="icon-button export-button" title="Export conversation" onClick={exportConversation}><Icon name="download" size={17} /></button></div>
         </div>
       </aside>
 
       <section className="chat-panel">
         <header className="topbar">
-          <div className="topbar-left"><button className="icon-button menu-button" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}><Icon name="menu" /></button><div className="mobile-brand"><span className="brand-mark small"><Icon name="sparkle" size={16} /></span><strong>free chat app <em>by ahmii</em></strong></div><label className="model-pill"><span className="online-dot" /><select aria-label="Chat model provider" value={provider} onChange={(event) => { setProvider(event.target.value as ChatProvider); setMode('standard'); }}><option value="gemini">Gemini · Free</option><option value="groq">Groq · Free tier</option></select><span className="chevron">⌄</span></label>{provider === 'groq' && <label className="model-pill groq-model-pill"><select aria-label="Groq model" value={groqModel} onChange={(event) => setGroqModel(event.target.value as GroqModel)}><option value="openai/gpt-oss-120b">GPT OSS 120B</option><option value="qwen/qwen3.8-27b">Qwen 3.8 27B</option></select><span className="chevron">⌄</span></label>}</div>
+          <div className="topbar-left"><button className="icon-button menu-button" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}><Icon name="menu" /></button><div className="mobile-brand"><span className="brand-mark small"><Icon name="sparkle" size={16} /></span><strong>free chat app <em>by ahmii</em></strong></div><div className="model-pill"><span className="online-dot" /> Gemini · Free</div></div>
           <div className="topbar-actions"><label className="language-picker"><span className="language-icon">文</span><select aria-label="Response language" value={language} onChange={(event) => setLanguage(event.target.value)}>{languages.map((item) => <option key={item}>{item}</option>)}</select><span className="chevron">⌄</span></label><button className="icon-button export-top" title="Export conversation" aria-label="Export conversation" onClick={exportConversation}><Icon name="download" size={17} /></button></div>
         </header>
 
@@ -587,7 +583,6 @@ export default function Home() {
               {(toolsOpen || promptKitOpen) && <button type="button" aria-label="Close tools menu" className="tools-menu-backdrop" onClick={() => { setToolsOpen(false); setPromptKitOpen(false); }} />}
               {toolsOpen && <div className="tools-menu" role="menu">
                 <div className="tools-menu-heading">Add to your message</div>
-                {provider === 'groq' && <div className="provider-note">Groq text models don’t analyze image or PDF attachments. Switch to Gemini for those.</div>}
                 <button type="button" className="tools-menu-item" role="menuitem" onClick={() => fileInputRef.current?.click()}><span className="tools-menu-icon"><Icon name="paperclip" size={17} /></span><span><strong>Add photos &amp; files</strong><small>Any supported file · 60 MB max per file and per message</small></span></button>
                 <button type="button" className="tools-menu-item" role="menuitem" onClick={() => void openCamera()}><span className="tools-menu-icon tools-blue"><Icon name="camera" size={17} /></span><span><strong>Open camera</strong><small>Take a photo here, or use your device camera</small></span></button>
                 <button type="button" className="tools-menu-item" role="menuitem" onClick={() => { setToolsOpen(false); toggleVoiceInput(); }}><span className="tools-menu-icon tools-teal"><Icon name="mic" size={17} /></span><span><strong>{listening ? 'Stop voice typing' : 'Voice message'}</strong><small>{listening ? 'Tap to stop dictation' : 'Speak to fill in your message'}</small></span></button>
@@ -596,10 +591,8 @@ export default function Home() {
                 <button type="button" className="tools-menu-item" role="menuitem" onClick={() => { setToolsOpen(false); setCreativeKind('image'); setInput((current) => current || 'Create an image of '); }}><span className="tools-menu-icon tools-yellow"><Icon name="image" size={17} /></span><span><strong>Create image</strong><small>Generate an original AI visual</small></span></button>
                 <button type="button" className="tools-menu-item" role="menuitem" onClick={() => { setToolsOpen(false); setCreativeKind('sticker'); setInput((current) => current || 'Create a cute sticker of '); }}><span className="tools-menu-icon tools-pink"><Icon name="sticker" size={17} /></span><span><strong>Create sticker</strong><small>Make a custom sticker design</small></span></button>
                 <div className="tools-menu-separator" />
-                {provider === 'gemini' && <>
-                  <button type="button" className={`tools-menu-item ${mode === 'research' ? 'tools-menu-selected' : ''}`} role="menuitem" onClick={() => { setToolsOpen(false); setMode(mode === 'research' ? 'standard' : 'research'); }}><span className="tools-menu-icon tools-blue"><Icon name="globe" size={17} /></span><span><strong>Web search</strong><small>{mode === 'research' ? 'Turn off current web research' : 'Find recent information online'}</small></span></button>
-                  <button type="button" className={`tools-menu-item ${mode === 'think' ? 'tools-menu-selected' : ''}`} role="menuitem" onClick={() => { setToolsOpen(false); setMode(mode === 'think' ? 'standard' : 'think'); }}><span className="tools-menu-icon tools-purple"><Icon name="sparkle" size={17} /></span><span><strong>Think deeper</strong><small>{mode === 'think' ? 'Turn off deeper reasoning' : 'Ask for a more considered answer'}</small></span></button>
-                </>}
+                <button type="button" className={`tools-menu-item ${mode === 'research' ? 'tools-menu-selected' : ''}`} role="menuitem" onClick={() => { setToolsOpen(false); setMode(mode === 'research' ? 'standard' : 'research'); }}><span className="tools-menu-icon tools-blue"><Icon name="globe" size={17} /></span><span><strong>Web search</strong><small>{mode === 'research' ? 'Turn off current web research' : 'Find recent information online'}</small></span></button>
+                <button type="button" className={`tools-menu-item ${mode === 'think' ? 'tools-menu-selected' : ''}`} role="menuitem" onClick={() => { setToolsOpen(false); setMode(mode === 'think' ? 'standard' : 'think'); }}><span className="tools-menu-icon tools-purple"><Icon name="sparkle" size={17} /></span><span><strong>Think deeper</strong><small>{mode === 'think' ? 'Turn off deeper reasoning' : 'Ask for a more considered answer'}</small></span></button>
               </div>}
               {promptKitOpen && <section className="tools-menu prompt-kit-menu" aria-label="Ahmii prompt kit">
                 <div className="prompt-library-heading"><div><span className="prompt-kicker">AHMII PROMPT KIT</span><h2>Choose a quick prompt</h2></div><button type="button" className="prompt-kit-close" aria-label="Close prompt kit" onClick={() => setPromptKitOpen(false)}><Icon name="close" size={16} /></button></div>

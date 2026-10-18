@@ -1,17 +1,14 @@
 import { GoogleGenAI } from '@google/genai';
-import Groq from 'groq-sdk';
 import { generateWithModelFallback, getModelCandidates } from '../../lib/gemini-fallback.js';
 
 const MAX_FILE_BYTES = 60 * 1024 * 1024;
 const MAX_TOTAL_ATTACHMENT_BYTES = 60 * 1024 * 1024;
 
 export async function POST(request) {
-  let activeProvider = 'unknown';
   try {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     const body = await request.json();
-    const { message, history = [], attachments = [], language = 'Auto detect', mode = 'standard', provider = 'gemini', groqModel } = body;
-    activeProvider = provider;
+    const { message, history = [], attachments = [], language = 'Auto detect', mode = 'standard' } = body;
     if (typeof message !== 'string' || !message.trim() || !Array.isArray(history) || !Array.isArray(attachments)) {
       return Response.json({ error: 'Please provide a message and valid chat history.' }, { status: 400 });
     }
@@ -56,28 +53,9 @@ export async function POST(request) {
     if (mode === 'think') instructions.push('Think carefully through the request and give a clear, well-reasoned answer. Do not reveal private chain-of-thought; provide a concise rationale and useful conclusions.');
     if (mode === 'research') instructions.push('Use Google Search grounding to verify current or time-sensitive claims. Clearly distinguish sourced facts from uncertainty.');
 
-    if (provider === 'groq') {
-      const groqApiKey = process.env.GROQ_API_KEY;
-      if (!groqApiKey) {
-        return Response.json({ error: 'Groq is not configured. Locally, add GROQ_API_KEY to .env.local. On Vercel, add it under Project Settings → Environment Variables, then redeploy.' }, { status: 503 });
-      }
-      const supportedGroqModels = new Set(['openai/gpt-oss-120b', 'qwen/qwen3.8-27b']);
-      const model = supportedGroqModels.has(groqModel) ? groqModel : 'openai/gpt-oss-120b';
-      const groq = new Groq({ apiKey: groqApiKey });
-      const groqMessages = [
-        ...(instructions.length ? [{ role: 'system', content: instructions.join(' ') }] : []),
-        ...contents.flatMap((turn) => turn.parts.map((part) => ({ role: turn.role === 'model' ? 'assistant' : 'user', content: part.text }))),
-        { role: 'user', content: userParts.map((part) => 'text' in part ? part.text : '[An image or PDF was attached. Groq text models cannot inspect this attachment; use Gemini for image or PDF understanding.]').join('\n') },
-      ];
-      const completion = await groq.chat.completions.create({ model, messages: groqMessages });
-      return Response.json({ reply: completion.choices[0]?.message?.content || 'No response text generated.', model, provider: 'groq' });
-    }
-    if (provider !== 'gemini') {
-      return Response.json({ error: 'Select Gemini or Groq as the chat provider.' }, { status: 400 });
-    }
     if (!apiKey) {
       return Response.json(
-        { error: 'Gemini is not configured. Locally, add GEMINI_API_KEY to .env.local. On Vercel, add it under Project Settings → Environment Variables for Production, then redeploy. Or select Groq and configure GROQ_API_KEY.' },
+        { error: 'Gemini is not configured. Locally, add GEMINI_API_KEY to .env.local. On Vercel, add it under Project Settings → Environment Variables for Production, then redeploy.' },
         { status: 503 },
       );
     }
@@ -102,20 +80,19 @@ export async function POST(request) {
 
     return Response.json({ reply: response.text || 'No response text generated.', model });
   } catch (error) {
-    const providerError = error instanceof Error ? error : new Error(`Unknown ${activeProvider} error`);
+    const providerError = error instanceof Error ? error : new Error('Unknown Gemini error');
     const status = Number(providerError.status || providerError.statusCode || 500);
-    const service = activeProvider === 'groq' ? 'Groq' : 'Gemini';
-    console.error(`${service} chat request failed:`, { status, message: providerError.message });
+    console.error('Gemini chat request failed:', { status, message: providerError.message });
 
-    let message = `${service} could not complete the request. Check the server terminal for provider details.`;
+    let message = 'Gemini could not complete the request. Check the server terminal for provider details.';
     if (status === 401 || status === 403) {
-      message = `${service} rejected its API key. Check the server-side ${activeProvider === 'groq' ? 'GROQ_API_KEY' : 'GEMINI_API_KEY'} setting and provider access.`;
+      message = 'Gemini rejected its API key. Check the server-side GEMINI_API_KEY setting and Google AI Studio access.';
     } else if (status === 429) {
-      message = `${service} rate limit or quota reached. Check your provider usage limits and try again later.`;
+      message = 'Gemini rate limit or quota reached. Check your Google AI Studio usage and try again later.';
     } else if (status === 404) {
-      message = `${service} model is unavailable or retired. Choose another model in the selector and try again.`;
+      message = 'Gemini model is unavailable or retired. Check model access in Google AI Studio.';
     } else if (status >= 400 && status < 500) {
-      message = `${service} rejected the request (HTTP ${status}). Check the server terminal for details; the API key is not logged.`;
+      message = `Gemini rejected the request (HTTP ${status}). Check the server terminal for details; the API key is not logged.`;
     }
 
     return Response.json({ error: message }, { status: status >= 400 && status < 600 ? status : 500 });

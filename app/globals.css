@@ -69,8 +69,6 @@ button:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2p
 .model-pill { display: flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.08); border-radius: 30px; color: #dddcd5; font-size: 11px; }
 .model-pill select { max-width: 138px; appearance: none; border: 0; outline: none; background: transparent; color: inherit; cursor: pointer; font-size: 10px; }
 .model-pill option { background: #1c1c19; color: #f5f5ed; }
-.groq-model-pill { border-color: rgba(217,242,126,.12); }
-.provider-note { margin: 2px 5px 8px; padding: 8px 9px; border: 1px solid rgba(217,198,111,.14); border-radius: 8px; background: rgba(217,198,111,.045); color: #c8c09a; font-size: 9px; line-height: 1.45; }
 .model-pill .online-dot { width: 6px; height: 6px; margin: 0; }
 .pill-muted { color: #696960; }
 .language-picker { position: relative; display: flex; height: 34px; align-items: center; gap: 7px; padding: 0 11px; border: 1px solid rgba(255,255,255,.09); border-radius: 9px; color: #c1c0b8; }
@@ -235,8 +233,6 @@ button:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2p
   .brand-mark.small { width: 25px; height: 25px; border-radius: 9px 9px 9px 4px; }
   .model-pill { max-width: 130px; gap: 4px; padding: 6px 7px; font-size: 9px; }
   .model-pill select { max-width: 98px; font-size: 9px; }
-  .groq-model-pill { display: flex; max-width: 115px; }
-  .groq-model-pill select { max-width: 82px; }
   .language-picker { height: 31px; gap: 4px; padding: 0 7px; }
   .language-picker select { max-width: 82px; font-size: 9px; }
   .language-icon { font-size: 12px; }
