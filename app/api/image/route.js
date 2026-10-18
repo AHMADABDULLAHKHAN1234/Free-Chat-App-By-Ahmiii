@@ -5,7 +5,7 @@ export async function POST(request) {
   try {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) {
-      return Response.json({ error: 'Add GEMINI_API_KEY to .env.local to generate images.' }, { status: 503 });
+      return Response.json({ error: 'Image generation needs GEMINI_API_KEY. Locally, add it to .env.local. On Vercel, add it under Project Settings → Environment Variables for Production, then redeploy.' }, { status: 503 });
     }
 
     const { prompt, kind = 'image' } = await request.json();

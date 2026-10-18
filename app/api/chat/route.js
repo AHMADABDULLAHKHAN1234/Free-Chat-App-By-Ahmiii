@@ -59,7 +59,7 @@ export async function POST(request) {
     if (provider === 'groq') {
       const groqApiKey = process.env.GROQ_API_KEY;
       if (!groqApiKey) {
-        return Response.json({ error: 'Groq is not configured. Add GROQ_API_KEY in your server environment to use Groq models.' }, { status: 503 });
+        return Response.json({ error: 'Groq is not configured. Locally, add GROQ_API_KEY to .env.local. On Vercel, add it under Project Settings → Environment Variables, then redeploy.' }, { status: 503 });
       }
       const supportedGroqModels = new Set(['openai/gpt-oss-120b', 'qwen/qwen3.8-27b']);
       const model = supportedGroqModels.has(groqModel) ? groqModel : 'openai/gpt-oss-120b';
@@ -77,7 +77,7 @@ export async function POST(request) {
     }
     if (!apiKey) {
       return Response.json(
-        { error: 'Gemini is not configured. Add GEMINI_API_KEY to your server environment, or select Groq and configure GROQ_API_KEY.' },
+        { error: 'Gemini is not configured. Locally, add GEMINI_API_KEY to .env.local. On Vercel, add it under Project Settings → Environment Variables for Production, then redeploy. Or select Groq and configure GROQ_API_KEY.' },
         { status: 503 },
       );
     }

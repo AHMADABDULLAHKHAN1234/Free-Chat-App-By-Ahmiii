@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Free Chat App by Ahmii
 
-## Getting Started
+A Next.js chat app with Gemini and optional Groq models, image/sticker generation, file attachments, voice input, and a prompt kit.
 
-First, run the development server:
+## Run locally
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install Node.js 20 or newer.
+2. Install dependencies with `npm install`.
+3. Copy `.env.example` to `.env.local` and add your provider key(s).
+4. Start with `npm run dev`, then open `http://localhost:3000`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Required and optional API keys
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `GEMINI_API_KEY` — required for Gemini chat, image generation, and stickers. Create a key in [Google AI Studio](https://aistudio.google.com/apikey).
+- `GROQ_API_KEY` — optional; enables Groq chat models. Create a key in [Groq Console](https://console.groq.com/keys).
+- `GEMINI_MODEL`, `GEMINI_FALLBACK_MODELS`, `GEMINI_IMAGE_MODEL`, and `GEMINI_IMAGE_FALLBACK_MODELS` are optional model overrides. Defaults are in `.env.example` as comments.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Never commit `.env.local`, publish API keys, or expose provider keys through `NEXT_PUBLIC_` variables. The `.gitignore` excludes `.env*` files. If a key was accidentally shared, revoke it and create a replacement.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The project is connected to GitHub at `AHMADABDULLAHKHAN1234/Free-Chat-App-By-Ahmiii`. If Vercel is connected to that repository, each push to `main` should trigger a production deployment.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Before chat and image features can work in production:
+
+1. Open the project in the Vercel dashboard.
+2. Go to **Settings → Environment Variables**.
+3. Add `GEMINI_API_KEY` with your Google AI Studio key for **Production** (and Preview/Development if those deployments need it).
+4. Optionally add `GROQ_API_KEY` to enable Groq chat.
+5. Save and redeploy the latest deployment so the new variables are loaded.
+
+Do not put API keys in GitHub, source files, or `NEXT_PUBLIC_` variables. The keys are read only by server API routes. The site itself can load without a key, but chat requires at least one configured provider key. Image and sticker creation specifically require `GEMINI_API_KEY`.
+
+Vercel Hobby can host personal, non-commercial projects within its current quotas. Provider API usage has separate quotas and may incur charges. Review current Vercel and AI-provider terms, quotas, and pricing before opening the site to the public.
+
+## File upload notes
+
+The app currently accepts up to 5 attachments, with a 60 MB combined limit. DOCX and PPTX text is extracted in the browser. Images and PDFs are sent to Gemini as inline data and may exceed Gemini's own request or model limits even when they pass the app's upload checks. Groq chat models are text-only; switch to Gemini for image/PDF understanding.
+
+## Checks
+
+- `npm run lint`
+- `npm run build`
